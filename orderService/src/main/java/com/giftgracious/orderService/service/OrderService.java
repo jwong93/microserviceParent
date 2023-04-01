@@ -31,7 +31,7 @@ public class OrderService {
     @Autowired
     private final OrderRepository orderRepository;
 
-    private final WebClient orderwebClient;
+    private final WebClient.Builder orderwebClient;
 
     public void placeOrder(OrderRequestDTO orderRequestDTO){
         Order order = new Order();
@@ -49,8 +49,8 @@ public class OrderService {
 
         log.info(skucodes.toString());
 
-        InventoryDTO [] result = orderwebClient.get()
-                .uri("http://localhost:8082/api/inventory", uriBuilder -> uriBuilder.queryParam("skucode",skucodes).build())
+        InventoryDTO [] result = orderwebClient.build().get()
+                .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("skucode",skucodes).build())
                 .retrieve()
                 .bodyToMono(InventoryDTO [].class)
                 .block();
