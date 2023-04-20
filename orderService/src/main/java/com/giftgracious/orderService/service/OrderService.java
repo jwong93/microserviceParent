@@ -33,7 +33,7 @@ public class OrderService {
 
     private final WebClient.Builder orderwebClient;
 
-    public void placeOrder(OrderRequestDTO orderRequestDTO){
+    public String placeOrder(OrderRequestDTO orderRequestDTO){
         Order order = new Order();
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
@@ -69,8 +69,7 @@ public class OrderService {
             throw new IllegalArgumentException("No more stock");
         }
 
-
-
+        return "Order placed Successfully with Order ID: "+orderRequestDTO.getOrderNumber();
     }
     public Item maptoDTO (ItemDTO iTemDTO){
         Item items = new Item();

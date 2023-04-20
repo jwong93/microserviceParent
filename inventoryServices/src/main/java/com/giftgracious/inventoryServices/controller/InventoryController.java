@@ -4,6 +4,7 @@ import com.giftgracious.inventoryServices.dto.InventoryDTO;
 import com.giftgracious.inventoryServices.model.Inventory;
 import com.giftgracious.inventoryServices.services.InventoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -20,8 +21,7 @@ public class InventoryController {
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
-    public List<InventoryDTO> isInStock (@RequestParam List<String> skucode){
-        log.info("Called");
+    public List<InventoryDTO> isInStock (@RequestParam List<String> skucode) throws Exception {
         return inventoryService.isInStock(skucode);
     }
 }

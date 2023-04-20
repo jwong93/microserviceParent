@@ -1,13 +1,17 @@
 package com.giftgracious.orderService.controller;
 
 import com.giftgracious.orderService.dto.OrderRequestDTO;
+import com.giftgracious.orderService.model.Order;
 import com.giftgracious.orderService.service.OrderService;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.timelimiter.annotation.TimeLimiter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/order")
@@ -19,10 +23,15 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public String placeOrder(@RequestBody OrderRequestDTO orderRequestDTO){
+    @CircuitBreaker(name="inventory", fallbackMethod = "fallbackMethod")
+    @TimeLimiter(name="inventory")
+    public CompletableFuture<String> placeOrder(@RequestBody OrderRequestDTO orderRequestDTO){
         log.info(orderRequestDTO.getItemDTOS().toString());
-        orderService.placeOrder(orderRequestDTO);
-        return "Order Placed Successfully" + orderRequestDTO.getItemDTOS();
+        return CompletableFuture.supplyAsync(()->orderService.placeOrder(orderRequestDTO));
+    }
+
+    public CompletableFuture<String> fallbackMethod(OrderRequestDTO orderRequestDTO, RuntimeException exception){
+        return CompletableFuture.supplyAsync(()->"Unable to retrieve Inventory Information");
     }
 
     @GetMapping
