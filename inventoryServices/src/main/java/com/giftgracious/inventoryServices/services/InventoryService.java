@@ -20,9 +20,6 @@ public class InventoryService {
 
     @Transactional(readOnly = true)
     public List<InventoryDTO> isInStock (List<String> skucode) throws Exception{
-        log.info("Wait");
-        Thread.sleep(10000);
-        log.info("Wait ended");
         return inventoryRepository.findByskucodeIn(skucode)
                 .stream()
                 .map(inventory -> InventoryDTO.builder()
