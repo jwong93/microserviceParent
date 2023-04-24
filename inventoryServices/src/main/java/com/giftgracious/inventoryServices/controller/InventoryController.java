@@ -24,4 +24,12 @@ public class InventoryController {
     public List<InventoryDTO> isInStock (@RequestParam List<String> skucode) throws Exception {
         return inventoryService.isInStock(skucode);
     }
+//
+//    @PostMapping
+//    public void placeOrder (@RequestParam List<String> skucode){
+//        boolean isInStock = inventoryService.isInStock(skucode);
+//        if (!isInStock){
+//            return
+//        }
+//    }
 }

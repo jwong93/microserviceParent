@@ -20,5 +20,7 @@ public class Order {
     private String orderNumber;
     @OneToMany(cascade = CascadeType.ALL)
     private List<Item> items;
+    private String status;
+
 
 }

@@ -3,6 +3,7 @@ package com.giftgracious.orderService.service;
 import com.giftgracious.orderService.dto.InventoryDTO;
 import com.giftgracious.orderService.dto.ItemDTO;
 import com.giftgracious.orderService.dto.OrderRequestDTO;
+import com.giftgracious.orderService.event.OrderPlacedEvent;
 import com.giftgracious.orderService.model.Order;
 import com.giftgracious.orderService.model.Item;
 import com.giftgracious.orderService.repository.OrderRepository;
@@ -11,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cglib.core.Local;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -31,9 +33,11 @@ public class OrderService {
     @Autowired
     private final OrderRepository orderRepository;
 
+    private final KafkaTemplate<String, OrderPlacedEvent> kafkaTemplate;
+
     private final WebClient.Builder orderwebClient;
 
-    public String placeOrder(OrderRequestDTO orderRequestDTO){
+    public Long placeOrder(OrderRequestDTO orderRequestDTO){
         Order order = new Order();
         LocalDate date = LocalDate.now();
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
@@ -46,9 +50,15 @@ public class OrderService {
         order.setItems(orderItems);
         List<String> skucodes = order.getItems().stream()
                 .map(Item::getSkuCode).toList();
-
+        order.setStatus("Pending Confirmation");
         log.info(skucodes.toString());
+        orderRepository.save(order);
+        return order.getId();
+    }
 
+    public String confirmationOrder (Long id){
+        Order order = orderRepository.getReferenceById(id);
+        List<String> skucodes = order.getItems().stream().map(Item::getSkuCode).toList();
         InventoryDTO [] result = orderwebClient.build().get()
                 .uri("http://inventory-service/api/inventory", uriBuilder -> uriBuilder.queryParam("skucode",skucodes).build())
                 .retrieve()
@@ -62,14 +72,17 @@ public class OrderService {
 
         log.info(productinStock+"");
         if (productinStock){
+            kafkaTemplate.send("notificationTopic", new OrderPlacedEvent(order.getOrderNumber()));
+            order.setStatus("Confirmed");
             orderRepository.save(order);
             log.info(order.getId()+"");
         }
         else{
-            throw new IllegalArgumentException("No more stock");
-        }
+            order.setStatus("Rejected");
+            orderRepository.save(order);        }
 
-        return "Order placed Successfully with Order ID: "+orderRequestDTO.getOrderNumber();
+        return "Order placed Successfully with Order ID: "+order.getOrderNumber();
+
     }
     public Item maptoDTO (ItemDTO iTemDTO){
         Item items = new Item();
@@ -77,7 +90,6 @@ public class OrderService {
         items.setQuantity(iTemDTO.getQuantity());
         items.setSkuCode(iTemDTO.getSkuCode());
         return items;
-
     }
 
     public List<OrderRequestDTO> getallCurrentOrders (){

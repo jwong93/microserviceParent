@@ -27,7 +27,9 @@ public class OrderController {
     @TimeLimiter(name="inventory")
     public CompletableFuture<String> placeOrder(@RequestBody OrderRequestDTO orderRequestDTO){
         log.info(orderRequestDTO.getItemDTOS().toString());
-        return CompletableFuture.supplyAsync(()->orderService.placeOrder(orderRequestDTO));
+        Long id = orderService.placeOrder(orderRequestDTO);
+        log.info("Order Id" + id);
+        return CompletableFuture.supplyAsync(()->orderService.confirmationOrder(id));
     }
 
     public CompletableFuture<String> fallbackMethod(OrderRequestDTO orderRequestDTO, RuntimeException exception){
