@@ -21,6 +21,8 @@
 		<module>discoveryServer</module>
         <module>APIGateway</module>
 		<module>notificationService</module>
+        <module>AuthenticationServer</module>
+		<module>DeliveryService</module>
 	</modules>
     <properties>
 		<maven.compiler.source>17</maven.compiler.source>
