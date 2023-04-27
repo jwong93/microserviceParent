@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +29,32 @@ public class ProductService{
 
         productRepository.save(product);
         log.info("Product {} is saved", product.getId());
+    }
+
+    public void update (ProductResponseDTO res){
+        Product prod = Product.builder().id(res.getId())
+                .price(res.getPrice()).description(res.getDescription())
+                .name(res.getName()).build();
+        productRepository.save(prod);
+    }
+
+    public void remove (String id){
+        productRepository.deleteById(id);
+    }
+
+    public Product findById(ProductResponseDTO dto){
+        Optional<Product> prod = productRepository.findById(dto.getId());
+        if (prod.isPresent()){
+            Product prod1 = prod.get();
+            return prod1;
+        }
+        return null;
+    }
+
+    public ProductResponseDTO returnDto(String id){
+        Optional<Product> p = productRepository.findById(id);
+        Product m = p.get();
+        return mapToProductRes(m);
     }
 
     public List<ProductResponseDTO> getAllItems (){
