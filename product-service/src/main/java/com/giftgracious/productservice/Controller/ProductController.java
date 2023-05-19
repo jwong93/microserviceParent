@@ -10,6 +10,9 @@ import org.apache.coyote.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,7 +23,7 @@ public class ProductController {
 
     private final ProductService productService;
     @PostMapping
-    public ResponseEntity<?> createProduct (@RequestBody ProductRequestDTO productRequest){
+    public ResponseEntity<?> createProduct (@RequestBody ProductRequestDTO productRequest) throws SQLException, IOException {
         productService.create(productRequest);
         return new ResponseEntity<>(HttpStatus.CREATED);
     }
