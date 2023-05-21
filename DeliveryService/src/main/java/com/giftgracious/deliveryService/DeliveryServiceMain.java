@@ -1,17 +1,14 @@
-package com.giftgracious.authserver;
+package com.giftgracious.deliveryService;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
-
-@EnableDiscoveryClient
 @SpringBootApplication
-public class AuthenticationServerMain {
-
+@EnableDiscoveryClient
+public class DeliveryServiceMain {
     public static void main(String[] args) {
 
-        SpringApplication.run(AuthenticationServerMain.class,args);
+        SpringApplication.run(DeliveryServiceMain.class,args);
     }
 }

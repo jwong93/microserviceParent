@@ -12,10 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
 
@@ -37,16 +34,20 @@ public class AuthController {
         }
         log.info("Registering user");
         User user = userService.registerUser(signUpDTO);
-        Authentication auth = UsernamePasswordAuthenticationToken.authenticated(user,signUpDTO.getPassword(), Collections.EMPTY_LIST);
         log.info("User {} registered", user.getUsername());
-        log.info(user.getPassword());
-        return ResponseEntity.ok(tokenGenerator.createToken(auth));
+        return ResponseEntity.ok(user.getId());
     }
+
 
     @PostMapping("/login")
     public ResponseEntity login (@RequestBody SignInDTO dto){
-        if (userService.isAccountCorrect(dto))
-            return ResponseEntity.ok("Account Credentials Accepted");
+        if (userService.isAccountCorrect(dto)){
+            User user = userService.findUser(dto.getUsername());
+            if (user!=null) {
+                Authentication auth = UsernamePasswordAuthenticationToken.authenticated(user, dto.getPassword(), Collections.EMPTY_LIST);
+                return ResponseEntity.ok(tokenGenerator.createToken(auth));
+            }
+        }
         return ResponseEntity.notFound().build();
     }
 }

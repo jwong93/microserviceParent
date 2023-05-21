@@ -13,23 +13,18 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 
 @Configuration
-@EnableWebSecurity
+@EnableWebFluxSecurity
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain securityWebFilterChain (HttpSecurity httpSecurity) throws Exception{
-        httpSecurity.csrf()
-                .disable()
+    public SecurityWebFilterChain securityWebFilterChain (ServerHttpSecurity httpSecurity) throws Exception{
+        httpSecurity
+                .csrf().disable()
                 .cors().disable()
-                .authorizeHttpRequests((authorize) ->
-                        authorize.requestMatchers("/login/**").permitAll()
-                                .anyRequest().authenticated()
-                )
-                .sessionManagement((session) -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .exceptionHandling((exceptions) -> exceptions.authenticationEntryPoint(new BearerTokenAuthenticationEntryPoint())
-                        .accessDeniedHandler(new BearerTokenAccessDeniedHandler())
-                );
+                .authorizeExchange((exchange) -> exchange.pathMatchers("/api/auth/**").permitAll()
+                        .anyExchange()
+                        .authenticated())
+                .oauth2ResourceServer(ServerHttpSecurity.OAuth2ResourceServerSpec::jwt);
         return httpSecurity.build();
-
     }
 }

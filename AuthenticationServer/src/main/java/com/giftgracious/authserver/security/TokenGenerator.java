@@ -2,6 +2,7 @@ package com.giftgracious.authserver.security;
 
 import com.giftgracious.authserver.dto.TokenDTO;
 import com.giftgracious.authserver.model.User;
+import com.giftgracious.authserver.repository.UserRepository;
 import com.nimbusds.jwt.JWT;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,12 +17,16 @@ import org.springframework.stereotype.Component;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Component
 public class TokenGenerator {
 
     @Autowired
     JwtEncoder accessTokenEncoder;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     @Qualifier("jwtRefreshTokenEncoder")
@@ -36,6 +41,7 @@ public class TokenGenerator {
                 .issuedAt(curent)
                 .expiresAt(curent.plus(30, ChronoUnit.HOURS))
                 .subject(user.getId())
+                .claim("address",getUserAddress(user.getId()))
                 .build();
         return accessTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
@@ -49,6 +55,7 @@ public class TokenGenerator {
                 .issuedAt(curent)
                 .expiresAt(curent.plus(30, ChronoUnit.HOURS))
                 .subject(user.getId())
+                .claim("address",getUserAddress(user.getId()))
                 .build();
         return accessTokenEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
@@ -60,6 +67,7 @@ public class TokenGenerator {
         TokenDTO tokenDTO = TokenDTO.builder()
                         .userId(user.getId())
                                 .accessToken(createAccessToken(auth))
+                .address(getUserAddress(user.getId()))
                 .build();
 
         String refreshToken;
@@ -79,6 +87,11 @@ public class TokenGenerator {
         }
         tokenDTO.setRefreshToken(refreshToken);
         return tokenDTO;
+    }
+
+    private String getUserAddress (String id){
+        Optional<User> user = userRepository.findById(id);
+        return user.map(User::getAddress).orElse(null);
     }
 
 

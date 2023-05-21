@@ -15,4 +15,8 @@ public class SignUpDTO {
     private String email;
 
     private String mobileNumber;
+
+    private String address;
+
+    private String country;
 }

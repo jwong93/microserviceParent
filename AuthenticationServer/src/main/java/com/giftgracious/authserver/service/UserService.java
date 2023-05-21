@@ -61,30 +61,40 @@ public class UserService implements UserDetailsManager {
         User user = User.builder().username(dto.getUserName())
                 .password(encodePasswordEncoder(dto.getPassword()))
                 .email(dto.getEmail())
+                .country(dto.getCountry())
+                .address(dto.getAddress())
                 .mobileNumber(dto.getMobileNumber())
                 .build();
         createUser(user);
         return user;
     }
 
+    public User findUser (String username){
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent()){
+            return user.get();
+        }
+        return null;
+    }
+
     public boolean isAccountCorrect (SignInDTO dto){
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
         Optional<User> user = userRepository.findByUsername(dto.getUsername());
         User user1 = new User();
         if (user.isPresent()){
             user1 = user.get();
         }
-        String encodedPass = encoder.encode(dto.getPassword());
-        log.info(encodedPass.toString());
-        log.info(String.valueOf(encodedPass.equals(user1.getPassword())));
-        if (encodedPass.equals(user1.getPassword()) && dto.getUsername().equals(user1.getUsername()))
+        log.info(user1.getUsername());
+        log.info(String.valueOf(encoder.matches(dto.getPassword(),user1.getPassword())));
+        if (encoder.matches(dto.getPassword(),user1.getPassword()) && dto.getUsername().equals(user1.getUsername()))
             return true;
         return false;
     }
 
     public String encodePasswordEncoder (String password){
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        encoder.encode(password);
-        return encoder.toString();
+        PasswordEncoder encoder = new BCryptPasswordEncoder();
+        String encodedPw = encoder.encode(password);
+        log.info(encodedPw);
+        return encodedPw;
     }
 }
